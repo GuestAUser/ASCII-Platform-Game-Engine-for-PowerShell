@@ -12,16 +12,16 @@
 
 ## 📋 Table of Contents
 - [Features](#-features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [How to Play](#how-to-play)
-- [Controls](#controls)
-- [Game Mechanics](#game-mechanics)
-- [Levels](#levels)
-- [Technical Details](#technical-details)
-- [Troubleshooting](#troubleshooting)
-- [Version History](#version-history)
-- [License](#license)
+- [Requirements](#-requirements)
+- [Installation](#-installation)
+- [How to Play](#-how-to-play)
+- [Controls](#-controls)
+- [Game Mechanics](#-game-mechanics)
+- [Levels](#-levels)
+- [Technical Details](#-technical-details)
+- [Troubleshooting](#-troubleshooting)
+- [Version History](#-version-history)
+- [License](#-license)
 
 ## 🤖 Features
 
