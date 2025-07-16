@@ -50,7 +50,8 @@
 
 2. **Enable script execution (if needed):**
    ```powershell
-   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope $env:USERNAME
+   $env:USERNAME = Current user-name
    ```
 
 3. **Run the game:**
