@@ -53,7 +53,7 @@
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope $env:USERNAME
 
    # What is $env:USERNAME?
-   $env:USERNAME = ( the current user name ) -> Explanation, do not copy.
+   $env:USERNAME = ( the current user name ) -> # Explanation, do not copy.
    ```
 
 3. **Run the game:**
