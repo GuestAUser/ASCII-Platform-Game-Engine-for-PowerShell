@@ -11,7 +11,7 @@
 ```
 
 ## 📋 Table of Contents
-- [Features](#features)
+- [Features](#-features)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [How to Play](#how-to-play)
