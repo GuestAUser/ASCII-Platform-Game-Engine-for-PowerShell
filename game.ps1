@@ -60,7 +60,7 @@ class GameObject {
 
 class Player : GameObject {
     hidden [double]$JumpPower = 28.0
-    hidden [double]$MoveSpeed = 40.0
+    hidden [double]$MoveSpeed = 38.5
     hidden [double]$InvulnerableTime = 0.0
     [bool]$IsGrounded = $false
     [int]$Lives = 3
@@ -172,6 +172,10 @@ class GameEngine {
     hidden [StringBuilder]$RenderBuffer
     hidden [ConsoleColor[][]]$ColorBuffer
     hidden [char[][]]$CharBuffer
+    hidden [double]$GameStartTime = 0.0
+    hidden [double]$TotalElapsedTime = 0.0
+    hidden [double]$TotalTargetTime = 60.0  # 20 + 20 + 20 seconds; 
+    hidden [bool]$TimerStarted = $false
     
     [Player]$Player
     [bool]$Running = $true
@@ -199,6 +203,13 @@ class GameEngine {
         $this.GameObjects.Clear()
         $this.GameState = 'Playing'
         $this.EndScreenDrawn = $false
+        
+        #timer-init < first-level-only >;
+        if ($this.Level -eq 1 -and -not $this.TimerStarted) {
+            $this.GameStartTime = $this.Stopwatch.Elapsed.TotalSeconds
+            $this.TotalElapsedTime = 0.0
+            $this.TimerStarted = $true
+        }
         
         #player;
         $this.Player = [Player]::new(5, 18)
@@ -419,6 +430,11 @@ class GameEngine {
     }
     
     [void] Update([double]$deltaTime) {
+        # Update-timer < total-game-time >;
+        if ($this.GameState -eq 'Playing' -and -not $this.GamePaused -and $this.TimerStarted) {
+            $this.TotalElapsedTime = $this.Stopwatch.Elapsed.TotalSeconds - $this.GameStartTime
+        }
+        
         # Apply-gravity;
         if (-not $this.Player.IsGrounded) {
             $this.Player.Velocity.Y += $this.Gravity * $deltaTime
@@ -551,6 +567,9 @@ class GameEngine {
         Write-Host " | Lives: " -NoNewline -ForegroundColor White
         $livesColor = if ($this.Player.Lives -le 1) { 'Red' } else { 'Green' }
         Write-Host "$($this.Player.Lives)" -NoNewline -ForegroundColor $livesColor
+        Write-Host " | Time: " -NoNewline -ForegroundColor White
+        $timeColor = if ($this.TotalElapsedTime -gt $this.TotalTargetTime) { 'Red' } else { 'Cyan' }
+        Write-Host ("{0:F1}s" -f $this.TotalElapsedTime) -NoNewline -ForegroundColor $timeColor
         Write-Host " | [ESC] Exit | [R] Restart | [P] Pause" -ForegroundColor Gray
         Write-Host ('-' * $this.Width) -ForegroundColor DarkGray
         
@@ -568,7 +587,7 @@ class GameEngine {
                     [Console]::ForegroundColor = $currentColor
                     [Console]::Write([string]::new($this.CharBuffer[$y], $lineStart, $x - $lineStart))
                     
-                    if ($x -lt $this.Width) {
+			    if ($x -lt $this.Width) {
                         $currentColor = $color
                         $lineStart = $x
                     }
@@ -598,12 +617,39 @@ class GameEngine {
             Write-Host "Press SPACE or ENTER to exit".PadLeft(44) -ForegroundColor Gray
         }
         else {
-            Write-Host "`n`n`n`n`n`n`n`n`n`n" -NoNewline
+            # Calculate < final-multiplier >;
+            $baseScore = $this.Player.Score
+            $finalMultiplier = 1.0
+            
+            if ($this.TotalElapsedTime -le $this.TotalTargetTime) {
+                # Faster = higher-multiplier;
+                $speedRatio = $this.TotalTargetTime / $this.TotalElapsedTime
+                $finalMultiplier = [Math]::Min($speedRatio, 3.0)  # Cap < 3x-max >
+            }
+            else {
+                # Slower = reduced-multiplier;
+                $slowRatio = $this.TotalElapsedTime / $this.TotalTargetTime
+                $finalMultiplier = [Math]::Max(1.0 / $slowRatio, 0.5)  # Min < 0.5x >
+            }
+            
+            $finalScore = [int]($baseScore * $finalMultiplier)
+            
+            Write-Host "`n`n`n`n`n`n`n`n" -NoNewline
             Write-Host ("              VICTORY!              ").PadLeft(50) -ForegroundColor Black -BackgroundColor Green
             Write-Host "`n`n" -NoNewline
-            Write-Host ("Final Score: $($this.Player.Score)").PadLeft(43) -ForegroundColor Yellow
+            Write-Host ("Total Time: {0:F1}s / Target: {1:F1}s" -f $this.TotalElapsedTime, $this.TotalTargetTime).PadLeft(48) -ForegroundColor Cyan
             Write-Host "`n" -NoNewline
-            Write-Host "You completed all levels!".PadLeft(42) -ForegroundColor Cyan
+            
+            if ($this.TotalElapsedTime -le $this.TotalTargetTime) {
+                Write-Host ("Speed Multiplier: {0:F1}x" -f $finalMultiplier).PadLeft(41) -ForegroundColor Magenta
+            }
+            else {
+                Write-Host ("Speed Multiplier: {0:F1}x" -f $finalMultiplier).PadLeft(41) -ForegroundColor DarkYellow
+            }
+            
+            Write-Host "`n" -NoNewline
+            Write-Host ("Base Score: $baseScore").PadLeft(39) -ForegroundColor Gray
+            Write-Host ("Final Score: $finalScore").PadLeft(40) -ForegroundColor Yellow -BackgroundColor DarkGray
             Write-Host "`n`n" -NoNewline
             Write-Host "Press SPACE or ENTER to exit".PadLeft(44) -ForegroundColor Gray
         }
@@ -622,12 +668,17 @@ class GameEngine {
     [void] RestartLevel() {
         $score = $this.Player.Score
         $lives = $this.Player.Lives
+        $currentLevel = $this.Level
+        $wasTimerStarted = $this.TimerStarted
         $this.InitializeLevel()
         $this.Player.Score = $score
         $this.Player.Lives = $lives
+        # Preserve < timer-state >;
+        $this.TimerStarted = $wasTimerStarted
     }
     
     [void] NextLevel() {
+        # Level-advance;
         $this.Level++
         if ($this.Level -gt 3) {
             $this.GameState = 'Victory'
@@ -636,7 +687,7 @@ class GameEngine {
             $score = $this.Player.Score
             $lives = $this.Player.Lives
             $this.InitializeLevel()
-            $this.Player.Score = $score + 100
+            $this.Player.Score = $score + 100  # Standard < level-completion-bonus >
             $this.Player.Lives = $lives
         }
     }
@@ -692,6 +743,11 @@ function Start-PlatformGame {
         Write-Host "X" -NoNewline -ForegroundColor Red
         Write-Host " or jump on them" -ForegroundColor Gray
         Write-Host "  Complete all 3 levels!" -ForegroundColor Gray
+        Write-Host "`n"
+        Write-Host "SPEEDRUN MODE:" -ForegroundColor Magenta
+        Write-Host "  Complete all 3 levels as fast as possible!" -ForegroundColor Gray
+        Write-Host "  Target time: 135 seconds (2:15)" -ForegroundColor Cyan
+        Write-Host "  Final score multiplied by speed (up to 3x)!" -ForegroundColor Gray
         Write-Host "`n"
         Write-Host "Press any key to start..." -ForegroundColor Green
         

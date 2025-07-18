@@ -33,6 +33,8 @@
 - **Score System** - Points for coins and defeating enemies
 - **Lives System** - 3 lives with invulnerability period after damage
 - **Pause Functionality** - Pause mid-game to take a break
+- **Speedrun Mode** - Timer tracking with score multipliers (up to 3x!)
+- **Real-time Timer** - Track your completion time with target goals
 
 ## 💻 Requirements
 
@@ -78,6 +80,12 @@
 | **═** | Platform | Stand and jump from these |
 | **█** | Ground | Solid ground (green blocks) |
 
+### Status Bar
+- **Level** - Current level (1-3)
+- **Score** - Your current points
+- **Lives** - Remaining lives (green when healthy, red when low)
+- **Time** - Elapsed time in seconds (cyan when under target, red when over)
+
 ## 🎮 Controls
 
 | Key | Action |
@@ -104,6 +112,15 @@
 - **Gravity system** - realistic falling acceleration
 - **Collision detection** - precise platform and enemy interactions
 - **Momentum preservation** - slide slightly when stopping
+
+### Speedrun Scoring
+- **Target Time** - 60 seconds total (20 seconds per level)
+- **Speed Multiplier** - Complete faster for up to 3x score multiplier
+- **Base Score** - Points from coins, enemies, and level completion
+- **Final Score** - Base score × speed multiplier
+- **Multiplier Calculation**:
+  - Under target time: Up to 3x multiplier (faster = higher)
+  - Over target time: Down to 0.5x multiplier (slower = lower)
 
 ## 🗺️ Levels
 
@@ -148,6 +165,7 @@ GameObject        - Base class for all entities
 ├── Coin          - Collectible items
 └── Enemy         - AI-controlled enemies
 GameEngine        - Main game loop and systems
+              └── Timer system for speedrun tracking
 ```
 
 ## 🐛 Troubleshooting
@@ -169,6 +187,7 @@ GameEngine        - Main game loop and systems
 
 ## 📝 Version History
 
+- **v4.0.0** - Added speedrun mode with timer and score multipliers
 - **v3.25.5** - Final optimized edition with flicker-free rendering
 - **v3.0.0** - Added colors, pause, and invulnerability system
 - **v2.0.0** - Improved physics and collision detection
