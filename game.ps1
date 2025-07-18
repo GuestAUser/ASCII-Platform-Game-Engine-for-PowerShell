@@ -174,7 +174,7 @@ class GameEngine {
     hidden [char[][]]$CharBuffer
     hidden [double]$GameStartTime = 0.0
     hidden [double]$TotalElapsedTime = 0.0
-    hidden [double]$TotalTargetTime = 60.0  # 20 + 20 + 20 seconds; 
+    hidden [double]$TotalTargetTime = 75.0  # 20 + 40 + 15 seconds; 
     hidden [bool]$TimerStarted = $false
     
     [Player]$Player
@@ -746,7 +746,7 @@ function Start-PlatformGame {
         Write-Host "`n"
         Write-Host "SPEEDRUN MODE:" -ForegroundColor Magenta
         Write-Host "  Complete all 3 levels as fast as possible!" -ForegroundColor Gray
-        Write-Host "  Target time: 135 seconds (2:15)" -ForegroundColor Cyan
+        Write-Host "  Target time: 75 seconds (1:15)" -ForegroundColor Cyan
         Write-Host "  Final score multiplied by speed (up to 3x)!" -ForegroundColor Gray
         Write-Host "`n"
         Write-Host "Press any key to start..." -ForegroundColor Green
